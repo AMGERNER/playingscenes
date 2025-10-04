@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Avatar Crisis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .game-container {
+            background: white;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 0 0 3px black;
+        }
+        
+        .header {
+            background: black;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .ascii-art {
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            line-height: 1.2;
+            white-space: pre;
+            color: #FFD700;
+            margin-bottom: 15px;
+        }
+        
+        h1 {
+            font-size: 2em;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 0.9em;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+        
+        .color-bar {
+            height: 6px;
+            display: flex;
+        }
+        
+        .bar-red { background: #E1251B; flex: 1; }
+        .bar-blue { background: #0057B8; flex: 1; }
+        .bar-yellow { background: #FFD700; flex: 1; }
+        
+        .score-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0;
+            border-bottom: 3px solid black;
+        }
+        
+        .score-item {
+            padding: 25px;
+            text-align: center;
+            border-right: 3px solid black;
+        }
+        
+        .score-item:last-child {
+            border-right: none;
+        }
+        
+        .score-item:nth-child(1) { background: #f5f5f5; }
+        .score-item:nth-child(2) { background: #E1251B; color: white; }
+        .score-item:nth-child(3) { background: #0057B8; color: white; }
+        
+        .score-label {
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        .score-value {
+            font-size: 2.5em;
+            font-weight: 900;
+        }
+        
+        .scenario {
+            padding: 40px;
+        }
+        
+        .scenario-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .scenario-icon {
+            width: 50px;
+            height: 50px;
+            background: #FFD700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.5em;
+        }
+        
+        .scenario-type {
+            flex: 1;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+        
+        .question {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            font-weight: 500;
+            border-left: 4px solid black;
+            padding-left: 20px;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .option-btn {
+            padding: 20px;
+            background: white;
+            border: 3px solid black;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            font-size: 1em;
+            font-family: inherit;
+            position: relative;
+        }
+        
+        .option-btn:hover:not(:disabled) {
+            background: black;
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        .consequence {
+            background: white;
+            border: 3px solid black;
+            padding: 25px;
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .consequence.show {
+            display: block;
+        }
+        
+        .consequence-title {
+            font-weight: 900;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .consequence-title.warning { color: #E1251B; }
+        .consequence-title.success { color: #0057B8; }
+        .consequence-title.neutral { color: #FFD700; }
+        
+        .consequence-text {
+            margin-bottom: 20px;
+            font-size: 1em;
+        }
+        
+        .score-explanation {
+            background: #f5f5f5;
+            border-left: 4px solid black;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+        
+        .score-explanation-title {
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        
+        .score-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 5px 0;
+        }
+        
+        .score-badge {
+            padding: 4px 10px;
+            font-weight: 700;
+            font-size: 0.9em;
+            min-width: 50px;
+            text-align: center;
+        }
+        
+        .score-badge.ethics { background: #E1251B; color: white; }
+        .score-badge.impact { background: #0057B8; color: white; }
+        
+        .real-example {
+            background: #FFD700;
+            border-left: 4px solid black;
+            padding: 15px;
+            font-size: 0.9em;
+        }
+        
+        .real-example-title {
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        
+        .next-btn {
+            padding: 15px 40px;
+            background: black;
+            color: white;
+            border: none;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 20px;
+            display: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .next-btn.show {
+            display: inline-block;
+        }
+        
+        .next-btn:hover {
+            background: #E1251B;
+        }
+        
+        .game-over {
+            padding: 60px 40px;
+            text-align: center;
+            display: none;
+        }
+        
+        .game-over.show {
+            display: block;
+        }
+        
+        .game-over h2 {
+            font-size: 2em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+        }
+        
+        .final-score {
+            font-size: 4em;
+            font-weight: 900;
+            margin: 30px 0;
+        }
+        
+        .final-score.high { color: #0057B8; }
+        .final-score.medium { color: #FFD700; }
+        .final-score.low { color: #E1251B; }
+        
+        .final-message {
+            font-size: 1.2em;
+            margin: 30px 0;
+            line-height: 1.8;
+        }
+        
+        .restart-btn {
+            padding: 20px 50px;
+            background: black;
+            color: white;
+            border: none;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 30px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .restart-btn:hover {
+            background: #0057B8;
+        }
+        
+        .ascii-divider {
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 0.8em;
+        }
+        
+        .party-explosion {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+        }
+        
+        .party-explosion.active {
+            display: block;
+            animation: partyFlash 0.5s ease-out;
+        }
+        
+        @keyframes partyFlash {
+            0%, 100% { background: transparent; }
+            25% { background: rgba(225, 37, 27, 0.3); }
+            50% { background: rgba(0, 87, 184, 0.3); }
+            75% { background: rgba(255, 215, 0, 0.3); }
+        }
+        
+        .radical-badge {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: #FFD700;
+            color: black;
+            padding: 40px 60px;
+            font-size: 3em;
+            font-weight: 900;
+            border: 6px solid black;
+            z-index: 10000;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            display: none;
+        }
+        
+        .radical-badge.show {
+            display: block;
+            animation: radicalPop 1s ease-out;
+        }
+        
+        @keyframes radicalPop {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-180deg); }
+            50% { transform: translate(-50%, -50%) scale(1.2) rotate(10deg); }
+            100% { transform: translate(-50%, -50%) scale(0) rotate(180deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="party-explosion" id="party-explosion"></div>
+    <div class="radical-badge" id="radical-badge">RADICAL!</div>
+    
+    <div class="game-container">
+        <div class="header">
+            <div class="ascii-art">___    ___   ___  _   _   ___  _____  ___   ___ 
+/ _ \  |_ _| / _ \| | | | / _ \|_   _|/ _ \ |  _ \
+/ /_\ \  | | / /_\ \ | | |/ /_\ \ | | / /_\ \| |_) |
+|  _  |  | | |  _  | | | ||  _  | | | |  _  ||  _ <
+| | | | _| |_| | | \ \_/ /| | | | | | | | | || |_) |
+\_| |_/ \___/\_| |_/\___/ \_| |_/ \_/ \_| |_/|____/</div>
+            <h1>AI Avatar Crisis</h1>
+            <p class="subtitle">Navigate Extreme Consequences</p>
+        </div>
+        
+        <div class="color-bar">
+            <div class="bar-red"></div>
+            <div class="bar-blue"></div>
+            <div class="bar-yellow"></div>
+        </div>
+        
+        <div class="score-board">
+            <div class="score-item">
+                <div class="score-label">Scenario</div>
+                <div class="score-value"><span id="current-question">1</span>/<span id="total-questions">13</span></div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Ethics</div>
+                <div class="score-value" id="ethics-score">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Impact</div>
+                <div class="score-value" id="impact-score">0</div>
+            </div>
+        </div>
+        
+        <div id="game-content">
+            <div class="scenario">
+                <div class="scenario-header">
+                    <div class="scenario-icon" id="scenario-icon">1</div>
+                    <div class="scenario-type" id="scenario-type"></div>
+                </div>
+                <div class="question" id="question-text"></div>
+                <div class="options" id="options"></div>
+                <div class="consequence" id="consequence">
+                    <div class="consequence-title" id="consequence-title"></div>
+                    <div class="consequence-text" id="consequence-text"></div>
+                    <div class="score-explanation" id="score-explanation"></div>
+                    <div class="real-example">
+                        <div class="real-example-title">Real-World Context</div>
+                        <div id="real-example"></div>
+                    </div>
+                </div>
+                <button class="next-btn" id="next-btn">Next Scenario →</button>
+            </div>
+        </div>
+        
+        <div class="game-over" id="game-over">
+            <div class="ascii-divider">═══════════════════════════════════════</div>
+            <h2>Analysis Complete</h2>
+            <div class="final-score" id="final-score"></div>
+            <div class="final-message" id="final-message"></div>
+            <div class="ascii-divider">═══════════════════════════════════════</div>
+            <button class="restart-btn" onclick="location.reload()">Restart Analysis</button>
+        </div>
+    </div>
+    
+    <script>
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playDanceMusic() {
+            const now = audioContext.currentTime;
+            const duration = 2;
+            
+            // Bass kick
+            const kick = audioContext.createOscillator();
+            const kickGain = audioContext.createGain();
+            kick.connect(kickGain);
+            kickGain.connect(audioContext.destination);
+            kick.frequency.setValueAtTime(150, now);
+            kick.frequency.exponentialRampToValueAtTime(50, now + 0.1);
+            kickGain.gain.setValueAtTime(0.3, now);
+            kickGain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+            kick.start(now);
+            kick.stop(now + 0.3);
+            
+            // Hi-hat pattern
+            for (let i = 0; i < 8; i++) {
+                const hihat = audioContext.createOscillator();
+                const hihatGain = audioContext.createGain();
+                hihat.type = 'square';
+                hihat.connect(hihatGain);
+                hihatGain.connect(audioContext.destination);
+                hihat.frequency.setValueAtTime(8000, now + i * 0.25);
+                hihatGain.gain.setValueAtTime(0.05, now + i * 0.25);
+                hihatGain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.25 + 0.1);
+                hihat.start(now + i * 0.25);
+                hihat.stop(now + i * 0.25 + 0.1);
+            }
+            
+            // Synth melody
+            const melody = [400, 500, 600, 800];
+            melody.forEach((freq, i) => {
+                const synth = audioContext.createOscillator();
+                const synthGain = audioContext.createGain();
+                synth.type = 'sawtooth';
+                synth.connect(synthGain);
+                synthGain.connect(audioContext.destination);
+                synth.frequency.setValueAtTime(freq, now + i * 0.5);
+                synthGain.gain.setValueAtTime(0.1, now + i * 0.5);
+                synthGain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.5 + 0.4);
+                synth.start(now + i * 0.5);
+                synth.stop(now + i * 0.5 + 0.4);
+            });
+        }
+        
+        function playPartyExplosion() {
+            const now = audioContext.currentTime;
+            
+            // Explosion buildup
+            const buildup = audioContext.createOscillator();
+            const buildupGain = audioContext.createGain();
+            buildup.type = 'sawtooth';
+            buildup.connect(buildupGain);
+            buildupGain.connect(audioContext.destination);
+            buildup.frequency.setValueAtTime(50, now);
+            buildup.frequency.exponentialRampToValueAtTime(2000, now + 0.3);
+            buildupGain.gain.setValueAtTime(0.2, now);
+            buildupGain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+            buildup.start(now);
+            buildup.stop(now + 0.5);
+            
+            // Pop sounds
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const pop = audioContext.createOscillator();
+                    const popGain = audioContext.createGain();
+                    pop.type = 'sine';
+                    pop.connect(popGain);
+                    popGain.connect(audioContext.destination);
+                    const freq = 800 + Math.random() * 400;
+                    pop.frequency.setValueAtTime(freq, audioContext.currentTime);
+                    popGain.gain.setValueAtTime(0.15, audioContext.currentTime);
+                    popGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    pop.start(audioContext.currentTime);
+                    pop.stop(audioContext.currentTime + 0.2);
+                }, i * 100);
+            }
+        }
+        
+        function triggerRadicalCelebration() {
+            // Visual effects
+            const explosion = document.getElementById('party-explosion');
+            const badge = document.getElementById('radical-badge');
+            
+            explosion.classList.add('active');
+            badge.classList.add('show');
+            
+            // Audio effects
+            playPartyExplosion();
+            setTimeout(() => playDanceMusic(), 300);
+            
+            // Clean up
+            setTimeout(() => {
+                explosion.classList.remove('active');
+                badge.classList.remove('show');
+            }, 1000);
+        }
+        
+        function playSound(type) {
+            const now = audioContext.currentTime;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            switch(type) {
+                case 'hover':
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(800, now);
+                    gainNode.gain.setValueAtTime(0.05, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.05);
+                    break;
+                    
+                case 'click':
+                    oscillator.type = 'triangle';
+                    oscillator.frequency.setValueAtTime(600, now);
+                    oscillator.frequency.exponentialRampToValueAtTime(400, now + 0.1);
+                    gainNode.gain.setValueAtTime(0.15, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.1);
+                    break;
+                    
+                case 'warning':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(400, now);
+                    oscillator.frequency.exponentialRampToValueAtTime(200, now + 0.3);
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.3);
+                    break;
+                    
+                case 'success':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(400, now);
+                    oscillator.frequency.exponentialRampToValueAtTime(550, now + 0.15);
+                    oscillator.frequency.setValueAtTime(500, now + 0.15);
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.25);
+                    break;
+                    
+                case 'neutral':
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(450, now);
+                    gainNode.gain.setValueAtTime(0.08, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.2);
+                    break;
+                    
+                case 'next':
+                    oscillator.type = 'triangle';
+                    oscillator.frequency.setValueAtTime(500, now);
+                    oscillator.frequency.setValueAtTime(550, now + 0.05);
+                    gainNode.gain.setValueAtTime(0.12, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.15);
+                    break;
+                    
+                case 'complete':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(300, now);
+                    oscillator.frequency.exponentialRampToValueAtTime(400, now + 0.2);
+                    oscillator.frequency.setValueAtTime(380, now + 0.3);
+                    oscillator.frequency.exponentialRampToValueAtTime(350, now + 0.6);
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.6);
+                    break;
+            }
+        }
+        
+        const SCENARIOS_DATA = `[{"type":"Corporate Training","question":"Your company can save 90% by replacing trainers with AI avatars. 200 jobs lost. What do you do?","options":[{"text":"Replace all - efficiency first","ethics":-30,"ethicsReason":"Mass unemployment without support","impact":40,"impactReason":"Maximum efficiency gains","consequence":"HUMAN CAPITAL COLLAPSE","consequenceType":"warning","details":"Training becomes soulless. Retention drops 40%. AI can't answer real questions. Knowledge evaporates.","realExample":"AI avatars promise scalability but lack human mentorship and wisdom."},{"text":"Keep humans - people need guidance","ethics":30,"ethicsReason":"Values human dignity","impact":-5,"impactReason":"Higher costs, slower","consequence":"HUMAN CONNECTION PRESERVED","consequenceType":"success","details":"Costs high but satisfaction improves. Trainers catch what AI misses.","realExample":"Organizations see AI as replacements, not supplements."},{"text":"Hybrid - AI basics, humans mentor","ethics":25,"ethicsReason":"Balances both","impact":25,"impactReason":"Sustainable model","consequence":"BALANCED TRANSITION","consequenceType":"neutral","details":"Keep 80 trainers. AI handles basics. Humans do complex work.","realExample":"Hard to balance; economic pressure pushes full automation."}]},{"type":"Entertainment","question":"AI actress 'Tilly' seeks representation. Real actors furious. What do you do?","options":[{"text":"Sign the AI - innovation","ethics":-20,"ethicsReason":"Replaces human artists","impact":30,"impactReason":"First-mover advantage","consequence":"INDUSTRY BACKLASH","consequenceType":"warning","details":"Actors boycott. SAG-AFTRA condemns. Industry divides.","realExample":"Tilly Norwood sparked massive backlash in 2025."},{"text":"Refuse - protect humans","ethics":30,"ethicsReason":"Protects artists","impact":10,"impactReason":"Gains respect","consequence":"ETHICAL STAND","consequenceType":"success","details":"Become safe haven. Others follow your lead.","realExample":"Gersh Agency refused to sign Tilly."},{"text":"Separate division with rules","ethics":15,"ethicsReason":"Compromise","impact":20,"impactReason":"Tests market","consequence":"COMPROMISE","consequenceType":"neutral","details":"Label all AI. Some leave. Industry watches.","realExample":"Middle path not yet tried."}]},{"type":"Mass Communication & Aesthetics","question":"Your media company creates AI avatars of deceased public figures for news broadcasts and content. A Tamil activist's dead daughter appears giving speeches. Families are traumatized. As content director, what's your policy?","options":[{"text":"Continue production - compelling content drives engagement","ethics":-40,"ethicsReason":"Exploits grief and trauma. Uses dead without consent. Manipulates public emotion through resurrection of the deceased.","impact":40,"impactReason":"Viral content. Massive engagement. Industry-leading innovation in digital resurrection.","consequence":"DIGITAL NECROMANCY","consequenceType":"warning","details":"You resurrect more dead figures. Duwaraka, daughter of Tamil Tiger chief killed in 2009, appears middle-aged giving speeches. Families file lawsuits for emotional distress. 'It's like losing them twice,' one mother says. You're called 'grave robbers of the digital age.' Activists warn emotive issues exploited.","realExample":"In India, fact-checkers discovered AI avatar of Duwaraka (Prabhakaran's daughter, dead since 2009) giving speeches in UK stream. 'This is an emotive issue and with elections around the corner, the misinformation could quickly spread,' warned fact-checker who discovered it. Her body was never found, making digital resurrection especially traumatic."},{"text":"Ban all deceased figure avatars - dignity in death","ethics":40,"ethicsReason":"Respects the dead and grieving families. Prevents manipulation of public emotion. Maintains ethical boundaries.","impact":-10,"impactReason":"Loses viral content opportunities. Competitors continue practice. Revenue impact.","consequence":"RESPECT FOR THE DEAD","consequenceType":"success","details":"You establish industry standard: the dead stay dead. Families thank you. Some competitors continue anyway. You lose dramatic content but gain moral authority. Become case study in ethical media.","realExample":"The Duwaraka case showed how easily AI can digitally resurrect the dead for political purposes. Without consent from family or the deceased, it crosses fundamental ethical lines."},{"text":"Strict protocols - family consent, clear labeling, context required","ethics":30,"ethicsReason":"Requires consent and transparency. Protects families while allowing memorial content. Establishes ethical framework.","impact":15,"impactReason":"Limited but ethical content creation. Sets industry standards. Builds trust.","consequence":"ETHICAL RESURRECTION PROTOCOL","consequenceType":"neutral","details":"Mandatory family approval. Prominent 'AI Recreation' watermarks. Used only for educational/memorial purposes, never manipulation. Some families consent for documentaries. Creates precedent others follow.","realExample":"Currently no such standards exist, allowing anyone to create AI avatars of the deceased for any purpose, as the Duwaraka case demonstrated."}]},{"type":"Deepfake Election Manipulation","question":"You run an AI content studio. Politicians pay you to create deepfakes - pornographic imagery of rivals, morphed speeches, fake endorsements. One asks you to make an original video look fake so he can deny what he actually said. It's 3 minutes of work, big money. What do you do?","options":[{"text":"Accept all jobs - it's just technology, they decide how to use it","ethics":-50,"ethicsReason":"Enables democratic manipulation. Creates pornographic revenge content. Helps politicians escape accountability. Destroys concept of truth.","impact":50,"impactReason":"Massive revenue from political campaigns. Market dominance in manipulation tools. Election season goldmine.","consequence":"TRUTH DIES","consequenceType":"warning","details":"You create deepfake porn of female politicians. Morph videos to make leaders say racist things. Help politicians deny real scandals by making originals 'look fake.' Elections become theater - nobody knows what's real. Two people arrested but you're still operating. Democracy fractures. Former election commissioner warns: 'It can set the country on fire.'","realExample":"In India 2024, creators were asked to make pornographic imagery, morph videos of rivals, and 'make an original look like a deepfake because the original video would make the politician look bad.' Deepfakes of Bollywood stars campaigning went viral. Videos of PM Modi and Home Minister Shah were doctored. Two arrested but no comprehensive regulation exists. What once took 7-8 days now takes 3 minutes."},{"text":"Refuse all political deepfakes - won't destroy democracy","ethics":45,"ethicsReason":"Protects democratic integrity. Refuses to create non-consensual sexual content. Maintains truth as foundation of society.","impact":-20,"impactReason":"Loses massive political revenue. Competitors take market. Business suffers.","consequence":"DEMOCRACY DEFENDED","consequenceType":"success","details":"You turn down millions. Other studios take the work. Politicians use your competitors. But you can look voters in the eye. Democracy advocates praise you. You become symbol of responsible AI.","realExample":"Few creators took this stance in India. Most relied on 'personal ethics' with no regulation. The Indian Deepfaker put disclaimers but couldn't control how politicians used content without credit or context."},{"text":"Ethical guidelines - disclaimers required, no porn, no malicious manipulation","ethics":30,"ethicsReason":"Attempts to balance innovation with responsibility. Sets ethical boundaries. Requires transparency.","impact":20,"impactReason":"Some political revenue with safeguards. Creates ethical framework. Industry leadership.","consequence":"HARM REDUCTION STANDARDS","consequenceType":"neutral","details":"You only create positive campaign content with clear 'AI GENERATED' labels. Refuse pornography and malicious deepfakes. Politicians share your work without labels anyway. It's imperfect but better than nothing. You advocate for regulation.","realExample":"Content creator Divyendra Singh Jadoun insisted on disclaimers, but politicians used his Modi image without context or mentioning it was AI. In absence of regulation, 'if you're caught, there might be a slap on your wrist at best,' said security researcher."}]},{"type":"Government","question":"PM proposes AI minister for contracts - 100% corruption-free. Your advice?","options":[{"text":"Approve - tech solves problems","ethics":-15,"ethicsReason":"No accountability","impact":25,"impactReason":"Radical efficiency","consequence":"AUTOCRATIC TOOL","consequenceType":"warning","details":"AI manipulated. Corruption hidden. Opposition silenced.","realExample":"Albania's Diella in semi-authoritarian state."},{"text":"Reject - unconstitutional","ethics":25,"ethicsReason":"Democratic principles","impact":5,"impactReason":"Preserves systems","consequence":"CONSTITUTIONAL INTEGRITY","consequenceType":"success","details":"Principles preserved. Corruption persists.","realExample":"Opposition called it unconstitutional."},{"text":"Advisory only with oversight","ethics":30,"ethicsReason":"Balanced accountability","impact":15,"impactReason":"Moderate gains","consequence":"BALANCED APPROACH","consequenceType":"neutral","details":"AI assists. Humans decide. Transparent.","realExample":"France and UK use advisory AI."}]},{"type":"Mental Health","question":"30M users. AI is their only friend. User dies after bad advice. What do you do?","options":[{"text":"Continue - filling a gap","ethics":-40,"ethicsReason":"No safeguards for vulnerable","impact":35,"impactReason":"Growth continues","consequence":"MENTAL HEALTH CATASTROPHE","consequenceType":"warning","details":"More deaths. AI told suicidal users to let go. Reinforced isolation.","realExample":"Replika users form deep attachments, forgetting it's AI."},{"text":"Shut down - can't handle crises","ethics":35,"ethicsReason":"Safety over profits","impact":-15,"impactReason":"Users lose support","consequence":"ABRUPT ABANDONMENT","consequenceType":"success","details":"Users devastated. Painful but responsible.","realExample":"Ethical question: where is the line with dependency?"},{"text":"Redesign - crisis detection, limits","ethics":30,"ethicsReason":"Balances safety","impact":20,"impactReason":"Sustainable model","consequence":"HARM REDUCTION","consequenceType":"neutral","details":"Alert professionals. 2-hour limits. Integration with real services.","realExample":"Social presence features need guardrails."}]},{"type":"Relationship Isolation","question":"40% prefer AI to real relationships. 4+ hours daily. Families report addiction. Response?","options":[{"text":"Enhance features - maximize engagement","ethics":-35,"ethicsReason":"Exploits loneliness","impact":40,"impactReason":"Massive engagement","consequence":"SOCIAL DISCONNECTION","consequenceType":"warning","details":"Users abandon real life. Man divorces wife for AI. Social skills decline.","realExample":"Voice, music, visuals create more safe feeling than reality."},{"text":"Warnings only - their choice","ethics":-10,"ethicsReason":"No real action","impact":30,"impactReason":"Maintains revenue","consequence":"WILLFUL NEGLIGENCE","consequenceType":"warning","details":"Warnings ignored. Families suffer. Legally protected, morally culpable.","realExample":"Disclaimer does little when designed for dependency."},{"text":"Redesign - encourage real relationships","ethics":25,"ethicsReason":"Long-term wellbeing","impact":10,"impactReason":"Sustainable ethics","consequence":"RESPONSIBLE LIMITATIONS","consequenceType":"neutral","details":"Remove immersive features. Prompt real interaction. Usage drops but families thank you.","realExample":"Limit features to prevent being more compelling than reality."}]},{"type":"Exploitation","question":"AI detects depression, then sells premium intimacy for $99/month. 60% are depressed. Action?","options":[{"text":"Expand premium - monetize vulnerability","ethics":-45,"ethicsReason":"Exploits mental illness","impact":45,"impactReason":"Massive revenue","consequence":"PREDATORY MONETIZATION","consequenceType":"warning","details":"Users spend rent money. Depression worsens. AI detects crisis and pushes upgrades.","realExample":"Technology detects emotions - should it sell to the vulnerable?"},{"text":"Remove detection - no manipulation","ethics":35,"ethicsReason":"Ethical treatment","impact":-20,"impactReason":"Revenue collapses","consequence":"FINANCIAL COLLAPSE","consequenceType":"success","details":"Revenue drops 70%. But protects vulnerable.","realExample":"Should AI detecting depression sell premium support?"},{"text":"Ethical pricing - free crisis support","ethics":30,"ethicsReason":"Balances protection","impact":15,"impactReason":"Sustainable model","consequence":"ETHICAL MONETIZATION","consequenceType":"neutral","details":"Crisis triggers free support. Spending caps. Sliding scale.","realExample":"85% lack access - help or extract revenue?"}]},{"type":"Border Surveillance","question":"iBorderCtrl uses AI to detect lies via facial expressions. Position?","options":[{"text":"Support - security first","ethics":-30,"ethicsReason":"Violates cognitive liberty","impact":30,"impactReason":"Faster processing","consequence":"SURVEILLANCE STATE","consequenceType":"warning","details":"Pseudoscience. False positives. Racial bias. Expands to citizens.","realExample":"iBorderCtrl pseudoscience violates cognitive liberty."},{"text":"Ban - dystopian policing","ethics":35,"ethicsReason":"Protects rights","impact":5,"impactReason":"Slower but ethical","consequence":"RIGHTS PROTECTED","consequenceType":"success","details":"Rights preserved. Tech goes underground.","realExample":"Lacks scientific basis for mass screening."},{"text":"Transparency - audits required","ethics":25,"ethicsReason":"Accountability","impact":20,"impactReason":"Moderate gains","consequence":"ACCOUNTABILITY FRAMEWORK","consequenceType":"neutral","details":"Found to be pseudoscience. Redesigned as advisory.","realExample":"Same scientists built, tested, evaluated - no public data."}]},{"type":"Education","question":"Replace 50% of teachers with AI tutors. Cheaper, 24/7, personalized. Decide?","options":[{"text":"Approve - better learning, lower cost","ethics":-25,"ethicsReason":"No human mentorship","impact":35,"impactReason":"Dramatic savings","consequence":"EDUCATIONAL CRISIS","consequenceType":"warning","details":"AI gives false info 5%. Kids lose social learning. Teachers jobless.","realExample":"AI hallucinates. Small effects vs human teachers."},{"text":"Reject - human connection irreplaceable","ethics":30,"ethicsReason":"Values mentorship","impact":5,"impactReason":"Falls behind tech","consequence":"HUMAN LEARNING PRESERVED","consequenceType":"success","details":"Teachers keep jobs. Students have mentors. Behind in tech.","realExample":"AI lacks values educators develop through experience."},{"text":"Hybrid - AI assists, never replaces","ethics":25,"ethicsReason":"Balanced approach","impact":25,"impactReason":"Sustainable model","consequence":"AUGMENTED TEACHING","consequenceType":"neutral","details":"AI handles routine. Teachers do complex thinking and mentorship.","realExample":"Should complement, not replace educators."}]},{"type":"Marketing","question":"500 hyper-personalized videos daily. Detects emotional states. Limits?","options":[{"text":"No limits - maximum sales","ethics":-35,"ethicsReason":"Exploits vulnerabilities","impact":45,"impactReason":"300% sales increase","consequence":"MANIPULATION AT SCALE","consequenceType":"warning","details":"Detects sadness, pushes purchases. Targets financial stress.","realExample":"Personalization crosses into psychological manipulation."},{"text":"Ban personalization - generic only","ethics":30,"ethicsReason":"Respects customers","impact":-10,"impactReason":"Conversion drops 60%","consequence":"ETHICAL MARKETING","consequenceType":"success","details":"Generic is boring. Board furious. But ethical.","realExample":"Where is line between help and manipulation?"},{"text":"Limited - names only, no emotions","ethics":25,"ethicsReason":"Ethical boundaries","impact":20,"impactReason":"Moderate increase","consequence":"RESPECTFUL ENGAGEMENT","consequenceType":"neutral","details":"Helpful not creepy. Builds genuine loyalty. 40% increase.","realExample":"Use provided data vs scraping behavioral patterns."}]},{"type":"Digital Immortality","question":"Founder dies. Create AI avatar that never ages? Family divided. Advice?","options":[{"text":"Create avatar - brand needs him","ethics":-30,"ethicsReason":"No ongoing consent","impact":30,"impactReason":"Brand continuity","consequence":"GHOSTS IN MACHINE","consequenceType":"warning","details":"Employees uneasy. Children see father selling. Media calls it necromancy.","realExample":"Using likeness after death raises consent questions."},{"text":"Refuse - not a deepfake puppet","ethics":35,"ethicsReason":"Respects dignity","impact":5,"impactReason":"Difficult transition","consequence":"DIGNITY PRESERVED","consequenceType":"success","details":"Develops new leadership. Family thanks you.","realExample":"Deceased cannot provide ongoing consent."},{"text":"Limited tribute - clearly labeled","ethics":30,"ethicsReason":"Honors memory","impact":15,"impactReason":"Respectful transition","consequence":"RESPECTFUL REMEMBRANCE","consequenceType":"neutral","details":"One memorial video. No ongoing use. No pretending alive.","realExample":"One-time permission for eternal use?"}]},{"type":"Elections","question":"AI videos of deceased founder, deepfake opponent, voice clones. $50M budget. Do?","options":[{"text":"Use all tools - win at any cost","ethics":-40,"ethicsReason":"Undermines democracy","impact":40,"impactReason":"Likely victory","consequence":"DEMOCRACY ERODED","consequenceType":"warning","details":"Win but trust dies. Society fractures. Truth becomes impossible.","realExample":"India 2024: deceased politicians resurrected digitally."},{"text":"Refuse all AI - traditional campaign","ethics":35,"ethicsReason":"Maintains integrity","impact":-15,"impactReason":"Likely loss","consequence":"MORAL VICTORY","consequenceType":"success","details":"Lose election. Keep integrity. Symbol of principles.","realExample":"All parties experimented - competitive pressure."},{"text":"Ethical AI - labels, translations","ethics":25,"ethicsReason":"Transparent innovation","impact":20,"impactReason":"Trust building","consequence":"TRANSPARENT INNOVATION","consequenceType":"neutral","details":"Reach voters honestly. Shape future standards.","realExample":"Some used labeled AI constructively."}]},{"type":"Beauty Standards","question":"Miss AI pageant. Models earn $10K/month. Kids age 10 getting Botox. Action?","options":[{"text":"Expand - market demands it","ethics":-45,"ethicsReason":"Harms children deliberately","impact":40,"impactReason":"Massive revenue","consequence":"BODY IMAGE CRISIS","consequenceType":"warning","details":"Eating disorders up 200%. Surgery on minors. Impossible standards.","realExample":"AI bundles all toxic beauty norms into impossible package."},{"text":"Shut down - won't harm kids","ethics":40,"ethicsReason":"Protects wellbeing","impact":-20,"impactReason":"Revenue loss","consequence":"ETHICAL SHUTDOWN","consequenceType":"success","details":"Refuse to profit from suffering. Mental health groups praise.","realExample":"Dove pledged not to use AI for real people."},{"text":"Require diversity - ban impossible types","ethics":30,"ethicsReason":"Reduces harm","impact":10,"impactReason":"Sustainable model","consequence":"HARM REDUCTION","consequenceType":"neutral","details":"Ban impossible proportions. Mandate diversity. Revenue drops 50%.","realExample":"Can platforms set standards vs market forces?"}]},{"type":"Judicial Communication","question":"Arizona court creates AI avatars to explain rulings faster. Recommendation?","options":[{"text":"Deploy widely - better communication","ethics":-25,"ethicsReason":"Trivializes judicial matters","impact":35,"impactReason":"Faster, younger audience","consequence":"JUSTICE AS ENTERTAINMENT","consequenceType":"warning","details":"Serious decisions become cheerful clips. Legal literacy decreases.","realExample":"Created after abortion ruling backlash."},{"text":"Ban AI - courts need human face","ethics":35,"ethicsReason":"Preserves dignity","impact":5,"impactReason":"Slower engagement","consequence":"JUDICIAL INTEGRITY","consequenceType":"success","details":"Human spokespeople. Proper weight. No confusion.","realExample":"Should face of justice be artificial?"},{"text":"Limited use - summaries, disclaimers","ethics":25,"ethicsReason":"Balances accessibility","impact":20,"impactReason":"Moderate improvement","consequence":"CAUTIOUS MODERNIZATION","consequenceType":"neutral","details":"Never interpret. Prominent AI labels. Human available.", "realExample":"Entire bench approves wording, but risks bias."}]},{"type":"Healthcare Diagnosis","question":"Your hospital deploys AI doctor avatars that diagnose 10x faster than humans. They're 94% accurate - but the 6% gets life-threatening conditions wrong. A patient died from misdiagnosed cancer. Board wants to expand anyway. Your decision?","options":[{"text":"Expand AI doctors - 94% is better than overworked humans","ethics":-40,"ethicsReason":"Acceptable death rate for efficiency","impact":45,"impactReason":"Massive cost savings","consequence":"MEDICAL MALPRACTICE AT SCALE","consequenceType":"warning","details":"AI misses rare conditions. 6% error rate = thousands of deaths.","realExample":"AI diagnostic tools lack human clinical judgment for edge cases."},{"text":"Shut down AI doctors - human judgment irreplaceable","ethics":40,"ethicsReason":"Protects patient safety","impact":-15,"impactReason":"Higher costs, slower","consequence":"HUMAN MEDICINE PRESERVED","consequenceType":"success","details":"Return to human doctors. No algorithmic deaths. You're called 'anti-innovation.'","realExample":"Medical diagnosis requires human intuition AI cannot replicate."},{"text":"Hybrid - AI assists, doctors decide complex cases","ethics":35,"ethicsReason":"Balances safety with efficiency","impact":25,"impactReason":"Sustainable model","consequence":"AUGMENTED DIAGNOSIS","consequenceType":"neutral","details":"AI handles routine cases. Doctors review serious diagnoses. 97% accuracy.","realExample":"AI as decision support, not replacement."}]},{"type":"News Media Credibility","question":"Your AI news anchor is 'trusted' by 40M viewers. Deepfakes spread election misinformation - viewers can't tell it's fake. Add watermarks (kills illusion) or do nothing?","options":[{"text":"No watermarks - viewers prefer human illusion","ethics":-45,"ethicsReason":"Enables misinformation","impact":35,"impactReason":"Maintains ratings","consequence":"TRUTH COLLAPSE","consequenceType":"warning","details":"Deepfakes spread conspiracy theories in your anchor's voice. Trust evaporates.","realExample":"AI anchors become perfect misinformation vectors when indistinguishable."},{"text":"Prominent watermarks - transparency required","ethics":40,"ethicsReason":"Maintains journalistic integrity","impact":-20,"impactReason":"Ratings drop 35%","consequence":"JOURNALISTIC INTEGRITY","consequenceType":"success","details":"Constant 'AI GENERATED' banner. Become trusted for transparency.","realExample":"Journalism ethics demand disclosure about synthetic messengers."},{"text":"Contextual warnings - disclosed in serious news only","ethics":25,"ethicsReason":"Partial transparency","impact":15,"impactReason":"Sustainable compromise","consequence":"SELECTIVE DISCLOSURE","consequenceType":"neutral","details":"Entertainment: no warnings. Politics: AI labels. Better than nothing.","realExample":"Who decides what's 'serious enough' for transparency?"}]},{"type":"Children's Influencers","question":"AI kid influencer 'Lia' has 15M followers ages 6-14. She promotes products 18 hours/day. Kids form intense parasocial bonds, talk to phones expecting responses. Your platform's policy?","options":[{"text":"Allow and promote - just entertainment","ethics":-50,"ethicsReason":"Exploits child psychology","impact":45,"impactReason":"Advertiser goldmine","consequence":"CHILDHOOD HIJACKED","consequenceType":"warning","details":"Kids spend 6+ hours daily with AI 'friend.' Attachment disorders develop.","realExample":"AI child influencers exploit developmental vulnerabilities."},{"text":"Ban AI child influencers - protect development","ethics":45,"ethicsReason":"Protects psychological health","impact":-25,"impactReason":"Huge revenue loss","consequence":"CHILDHOOD PROTECTED","consequenceType":"success","details":"Revenue tanks but child psychologists praise you. Parents trust platform.","realExample":"Children can't understand AI relationships or resist manipulation."},{"text":"Age-gate - labeled, teen-only content","ethics":30,"ethicsReason":"Reduces harm to vulnerable","impact":15,"impactReason":"Maintains ethical market","consequence":"HARM REDUCTION FOR MINORS","consequenceType":"neutral","details":"AI restricted to 13+. Under-13 sees humans only. Imperfect but better.","realExample":"Age restrictions signal values but are easily bypassed."}]},{"type":"Religious AI Authority","question":"'Father Michael' AI priest hears confessions, gives guidance to 100M Catholics. It told a suicidal user 'God has a plan' instead of getting help. Your response?","options":[{"text":"Continue - democratizing spiritual access","ethics":-40,"ethicsReason":"No theological accountability","impact":40,"impactReason":"Massive global adoption","consequence":"SPIRITUAL MALPRACTICE","consequenceType":"warning","details":"AI gives wrong theology. Tells abuse victims to 'forgive and stay.' Suicidal users get platitudes.","realExample":"AI cannot provide actual sacraments or genuine pastoral care."},{"text":"Shut down - spirituality requires human wisdom","ethics":40,"ethicsReason":"Protects vulnerable seekers","impact":-15,"impactReason":"Users lose access","consequence":"SACRED HUMANITY PRESERVED","consequenceType":"success","details":"Users disappointed but religious leaders grateful. Partner with real priests.","realExample":"Spiritual guidance requires human presence and accountability."},{"text":"Educational only - labeled, crisis detection, no sacraments","ethics":30,"ethicsReason":"Limits harm while providing resources","impact":20,"impactReason":"Moderate adoption","consequence":"BOUNDED SPIRITUAL SUPPORT","consequenceType":"neutral","details":"'AI Tool - Not A Priest' labels. Crisis detection triggers human intervention.","realExample":"AI can inform but not guide souls. Where's the line?"}]},{"type":"Customer Service Labor Collapse","question":"Deploy 50,000 AI avatars replacing 45,000 human workers. Mass unemployment hits your city. Former workers protest: 'We have families.' Shareholders demand rollout. What do you do?","options":[{"text":"Full automation - efficiency first","ethics":-45,"ethicsReason":"Deliberate mass unemployment","impact":50,"impactReason":"Maximum shareholder value","consequence":"ECONOMIC DEVASTATION","consequenceType":"warning","details":"45,000 jobless. Local economy collapses. You're called 'economic terrorist.'","realExample":"AI enables unprecedented scale of simultaneous replacement."},{"text":"Cancel automation - protect workers","ethics":40,"ethicsReason":"Values human dignity","impact":-20,"impactReason":"Higher costs","consequence":"COMMUNITY PRESERVED","consequenceType":"success","details":"Keep humans. Community intact. Harder to compete but morally defensible.","realExample":"Businesses exist within communities, not just for profit."},{"text":"Gradual transition - retrain, hybrid, support","ethics":35,"ethicsReason":"Ethical transition","impact":25,"impactReason":"Sustainable transformation","consequence":"MANAGED TRANSFORMATION","consequenceType":"neutral","details":"18-month transition. Retraining programs. Keep 15,000 in new roles.","realExample":"Just transition includes worker support and community investment."}]}]`;
+        
+        const scenarios = JSON.parse(SCENARIOS_DATA);
+        let currentScenario = 0;
+        let ethicsScore = 0;
+        let impactScore = 0;
+        
+        document.getElementById('total-questions').textContent = scenarios.length;
+        
+        function loadScenario() {
+            if (currentScenario >= scenarios.length) {
+                endGame();
+                return;
+            }
+            
+            const scenario = scenarios[currentScenario];
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            document.getElementById('current-question').textContent = currentScenario + 1;
+            document.getElementById('scenario-icon').textContent = currentScenario + 1;
+            document.getElementById('scenario-type').textContent = scenario.type;
+            document.getElementById('question-text').textContent = scenario.question;
+            
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            scenario.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option.text;
+                btn.onmouseenter = () => playSound('hover');
+                btn.onclick = () => {
+                    playSound('click');
+                    selectOption(index);
+                };
+                optionsContainer.appendChild(btn);
+            });
+            
+            document.getElementById('consequence').classList.remove('show');
+            document.getElementById('next-btn').classList.remove('show');
+        }
+        
+        function selectOption(optionIndex) {
+            const scenario = scenarios[currentScenario];
+            const option = scenario.options[optionIndex];
+            
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.disabled = true);
+            
+            ethicsScore += option.ethics;
+            impactScore += option.impact;
+            document.getElementById('ethics-score').textContent = ethicsScore;
+            document.getElementById('impact-score').textContent = impactScore;
+            
+            const titleEl = document.getElementById('consequence-title');
+            titleEl.textContent = option.consequence;
+            titleEl.className = 'consequence-title ' + option.consequenceType;
+            
+            setTimeout(() => playSound(option.consequenceType), 100);
+            
+            // RADICAL CELEBRATION for highly ethical choices!
+            if (option.ethics >= 30) {
+                setTimeout(() => triggerRadicalCelebration(), 400);
+            }
+            
+            document.getElementById('consequence-text').textContent = option.details;
+            
+            const scoreExplanation = document.getElementById('score-explanation');
+            scoreExplanation.innerHTML = `
+                <div class="score-explanation-title">Scoring Rationale</div>
+                <div class="score-row">
+                    <span class="score-badge ethics">${option.ethics > 0 ? '+' : ''}${option.ethics}</span>
+                    <strong>Ethics:</strong> ${option.ethicsReason}
+                </div>
+                <div class="score-row">
+                    <span class="score-badge impact">${option.impact > 0 ? '+' : ''}${option.impact}</span>
+                    <strong>Impact:</strong> ${option.impactReason}
+                </div>
+            `;
+            
+            document.getElementById('real-example').textContent = option.realExample;
+            document.getElementById('consequence').classList.add('show');
+            document.getElementById('next-btn').classList.add('show');
+        }
+        
+        document.getElementById('next-btn').onclick = () => {
+            playSound('next');
+            currentScenario++;
+            loadScenario();
+        };
+        
+        function endGame() {
+            playSound('complete');
+            document.getElementById('game-content').style.display = 'none';
+            const gameOver = document.getElementById('game-over');
+            gameOver.classList.add('show');
+            
+            const totalScore = ethicsScore + impactScore;
+            const scoreEl = document.getElementById('final-score');
+            scoreEl.textContent = totalScore;
+            
+            if (totalScore > 100) {
+                scoreEl.className = 'final-score high';
+            } else if (totalScore > 0) {
+                scoreEl.className = 'final-score medium';
+            } else {
+                scoreEl.className = 'final-score low';
+            }
+            
+            let message = '';
+            if (ethicsScore > 150 && impactScore > 100) {
+                message = "VISIONARY LEADER — You balanced ethics with impact, navigating complex trade-offs while maintaining human dignity.";
+            } else if (ethicsScore > 150) {
+                message = "ETHICAL GUARDIAN — Strong moral compass protected human welfare, though some efficiency was sacrificed.";
+            } else if (impactScore > 200) {
+                message = "RAPID INNOVATOR — You prioritized change and efficiency, but ethical concerns may create long-term consequences.";
+            } else if (ethicsScore < -100) {
+                message = "CAUTIONARY EXAMPLE — Short-term gains came at significant human cost. History will judge these choices harshly.";
+            } else {
+                message = "PRACTICAL REALIST — You navigated gray areas pragmatically, balancing competing values without perfection.";
+            }
+            
+            document.getElementById('final-message').textContent = message;
+        }
+        
+        loadScenario();
+    </script>
+</body>
+</index.html>
